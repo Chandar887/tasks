@@ -3,9 +3,10 @@
 namespace App\Http\Livewire\Backend;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Builder;
 
 class Users extends Component
 {
@@ -34,6 +35,8 @@ class Users extends Component
     public $user_limit = 10;
     public $user;
     public $password;
+    public $search;
+    public $role;
     
     public function new()
     {
@@ -79,6 +82,16 @@ class Users extends Component
         session()->flash('success', 'user deleted successfully.');
     }
 
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingRole()
+    {
+        $this->resetPage();
+    }
+
     public function mount()
     {
         $this->user = auth()->user();
@@ -86,10 +99,26 @@ class Users extends Component
 
     public function render()
     {
-        return view(
-            'livewire.backend.users',
+        $query = User::query();
+        if ($this->search) {
+            $query->where(function (Builder $query) {
+                $query->where('name', 'like', "%$this->search%")
+                      ->orWhere('email', 'like', "%$this->search%")
+                      ->orWhere('username', 'like', "%$this->search%")
+                      ->orWhere('commission', 'like', "%$this->search%")
+                      ->orWhere('profit', 'like', "%$this->search%");
+            });
+        }
+
+        if ($this->role) {
+            $query->where('role', $this->role);
+        }
+        
+        $users = $query->latest()->paginate($this->user_limit);
+        
+        return view('livewire.backend.users',
             [
-                'users' => User::where('role', '!=', 'sadmin')->latest()->paginate($this->user_limit)
+                'users' => $users
             ]
         );
     }

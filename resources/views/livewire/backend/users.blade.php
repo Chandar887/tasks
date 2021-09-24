@@ -28,21 +28,17 @@
                         <div class="col-12 col-md-3 mb-2">
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span>
-                                <input type="text" class="form-control" id="exampleInputIconLeft" placeholder="Search"
-                                    aria-label="Search">
+                                <input type="text" class="form-control" id="exampleInputIconLeft" placeholder="Search" wire:model.debounce.500ms="search" aria-label="Search">
                             </div>
                         </div>
                         <div class="col-6 col-md-3  mb-2">
                             <div class="input-group">
-                                <select class="form-control">
+                                <select class="form-control" wire:model="role">
                                     <option value="">- Select Role -</option>
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
-                        </div>
-                        <div class="col-6 col-md-3 mb-2">
-                            <button class="btn btn-secondary">Search</button>
                         </div>
                     </div>
                 </div>
@@ -69,37 +65,39 @@
                             $i = $users->perPage() * ($users->currentPage() - 1)+1;
                             @endphp
                             @forelse ($users as $item)
-                            <tr>
-                                <td>{{($i++)}}</td>
-                                <td>{{$item->name}}</td>
+                                @if ($item->role !== 'sadmin')
+                                    <tr>
+                                        <td>{{($i++)}}</td>
+                                        <td>{{$item->name}}</td>
 
-                                <td>
-                                    Commission <span class="rounded text-danger p-1">{{$item->commission}}%</span><br />
-                                    Profit <span class="rounded text-success p-1">{{$item->profit}}x</span>
-                                </td>
+                                        <td>
+                                            Commission <span class="rounded text-danger p-1">{{$item->commission}}%</span><br />
+                                            Profit <span class="rounded text-success p-1">{{$item->profit}}x</span>
+                                        </td>
 
-                                <td>
-                                    <small class="rounded p-1 text-light {{$item->enabled?"bg-success":"bg-danger"}}">
-                                        {{$item->enabled?"Enabled":"Disabled"}}
-                                    </small>
-                                </td>
-                                <td class="text-end">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        @if ($user->role == 'sadmin')
-                                            <button type="button" class="btn btn-danger user-delete-btn"
-                                                data-id="{{$item->id}}">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
-                                        @endif
-                                        <button type="button" class="btn btn-info user-edit-btn"
-                                            data-id="{{$item->id}}">
-                                            <i class="fa fa-edit"></i></button>
-                                        <button type="button" class="btn btn-secondary">
-                                            <i class="fa fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                        <td>
+                                            <small class="rounded p-1 text-light {{$item->enabled?"bg-success":"bg-danger"}}">
+                                                {{$item->enabled?"Enabled":"Disabled"}}
+                                            </small>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                @if ($user->role == 'sadmin')
+                                                    <button type="button" class="btn btn-danger user-delete-btn"
+                                                        data-id="{{$item->id}}">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                @endif
+                                                <button type="button" class="btn btn-info user-edit-btn"
+                                                    data-id="{{$item->id}}">
+                                                    <i class="fa fa-edit"></i></button>
+                                                <a href="{{ route('user-details', $item->id) }}" class="btn btn-secondary">
+                                                    <i class="fa fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             @empty
                             <tr>
                                 <td colspan="10" class="text-danger text-center py-5">

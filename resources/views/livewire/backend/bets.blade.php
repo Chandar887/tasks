@@ -48,8 +48,8 @@
         <ul class="nav nav-pills nav-fill">
             @foreach ($categories as $cat)
             <li class="nav-item mx-1 mb-1 p-0">
-                <a class="nav-link px-2 py-1 text-capitalize {{$cat->id==$category->id?'active bg-primary text-light':''}}"
-                    href="{{route("bets",$cat)}}">{{$cat->name}}</a>
+                <button class="nav-link px-2 py-1 text-capitalize {{ $cat->id == $category->id ? 'active bg-primary text-light' : ''}}"
+                    wire:click="changeCategory({{$cat->id}})">{{$cat->name}}</button>
             </li>
             @endforeach
         </ul>
@@ -347,7 +347,7 @@
         var clicks = 0, timer = null;
         var not_started = "{{ $bet_status == App\Enums\BetStatus::NOT_STARTED }}";
         var expired = "{{ $bet_status == App\Enums\BetStatus::EXPIRED }}";
-        
+
         /*Add Bets Dialog*/
         $("#addbet").on('shown.bs.modal', function(){
             $(this).find('#bet_amount').focus();
@@ -374,49 +374,49 @@
             clicks++;
 
             if (clicks === 1) {
-                if (not_started) {
-                    $('#showErrors').modal('show');
-                    $('.show-error').html('Bet not started yet.');
-                } else if (expired) {
-                    $('#showErrors').modal('show');
-                    $('.show-error').html('Bet expired.');
-                } else {
-                    timer = setTimeout(function () {
-                        clicks = 0;
-                        window.livewire.emit("bet-new",data_number);
+                timer = setTimeout(function () {
+                    clicks = 0;
+                    window.livewire.emit("bet-new",data_number);
+                    
+                    if (not_started) {
+                        $('#showErrors').modal('show');
+                        $('.show-error').html('Bet not started yet.');
+                    } else if (expired) {
+                        $('#showErrors').modal('show');
+                        $('.show-error').html('Bet expired.');
+                    } else {
                         $('#addbet').modal('show');
-                    },300);
-
-                    $(document).on("keydown",".bet_amount:last",function(e){
-                        var keyCode = e.keyCode || e.which; 
-                        var min_bet = "{{@$category->min_bet}}";
-                        var max_bet = "{{@$category->max_bet}}";
-
-                        var html = '<div class="row mb-2 added-fileds">';
-                        html += '<div class="col-5">';
-                        html += '<label for="name">Number<span class="text-danger">*</span></label>';
-                        html += '<input type="number" min="1" max="100" name="bet_number[]" class="form-control bet_number_err" value="" required>';
-                        html += '</div>';
-                        html += '<div class="col-5">';
-                        html += '<label for="name">Bet<span class="text-danger">*</span></label>';
-                        html += '<input type="number" name="bet_amount[]" class="form-control bet_amount bet_amount_err" min="'+min_bet+'" max="'+max_bet+'" required>';
-                        html += '</div><div class="col-2"><button type="button" class="remove-field text-danger" style="margin-top:35px;"><i class="fa fa-trash"></i></button></div></div>';
-                        
-                        if (e.keyCode == 9) {
-                            $('.add-new-field').append(html);
-                        }
-                    });
-
-                    $(document).on("click",".remove-field",function(e){
-                        $(this).closest('.added-fileds').remove();
-                    });
-                }
+                    }
+                },300);
             } else {
                 clicks = 0;
                 clearTimeout(timer);
                 window.livewire.emit("bets-detail",data_number);
                 $('#showbets').modal('show');
             }
+        });
+
+        $(document).on("keydown",".bet_amount:last",function(e){
+            var keyCode = e.keyCode || e.which; 
+            var min_bet = "{{@$category->min_bet}}";
+            var max_bet = "{{@$category->max_bet}}";
+            
+            if (keyCode == 9) {
+                var html = '<div class="row mb-2 added-fileds">';
+                html += '<div class="col-5">';
+                html += '<label for="name">Number<span class="text-danger">*</span></label>';
+                html += '<input type="number" min="1" max="100" name="bet_number[]" class="form-control bet_number_err" value="" required>';
+                html += '</div>';
+                html += '<div class="col-5">';
+                html += '<label for="name">Bet<span class="text-danger">*</span></label>';
+                html += '<input type="number" name="bet_amount[]" class="form-control bet_amount bet_amount_err" min="'+min_bet+'" max="'+max_bet+'" required>';
+                html += '</div><div class="col-2"><button type="button" class="remove-field text-danger" style="margin-top:35px;"><i class="fa fa-trash"></i></button></div></div>';
+                $('.add-new-field').append(html);
+            }
+        });
+
+        $(document).on("click",".remove-field",function(e){
+            $(this).closest('.added-fileds').remove();
         });
 
         window.addEventListener('close-bets-details', event => {

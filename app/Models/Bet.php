@@ -19,4 +19,14 @@ class Bet extends Model
     {
         return $this->belongsTo(Category::class);
     }
+    
+    public function scopeUserId($query, $value)
+    {
+        $query->where('user_id', $value);
+    }
+
+    public function scopeNumber($query, $value)
+    {
+        $query->where('number', $value);
+    }
 }

@@ -54,9 +54,7 @@ class Bets extends Component
     {
         $user = auth()->user();
         $end_time = $this->dateFormatToHis($this->category->end_time);
-        $current_time = $this->dateFormatToHis(Carbon::now());
-        
-        $betArr = [];   
+        $current_time = $this->dateFormatToHis(Carbon::now());  
         
         if ($current_time < $end_time) {
             if (count($data) > 0) {
@@ -96,7 +94,12 @@ class Bets extends Component
 
     public function betsDetail($number)
     {
-        $this->betsData = Bet::whereDate('created_at', Carbon::today())->where("number", $number)->latest()->with('user')->get();
+        $bet = Bet::whereDate('created_at', Carbon::today())->number($number)->latest();
+
+        if ($this->user->role == 'sadmin' || $this->user->role == 'admin')
+            $this->betsData = $bet->with('user')->get();
+        else 
+            $this->betsData = $bet->userId($this->user->id)->get();
     }
 
     public function declareResult()
@@ -128,11 +131,16 @@ class Bets extends Component
         return Carbon::parse($date)->format('H:i:s');
     }
 
+    public function changeCategory($cat_id){
+        $this->category = Category::find($cat_id);
+    }
+
     public function mount($category = null)
     {
         $this->categories = Category::where("enabled", true)->get();
-        $this->category = Category::where("enabled", true)->first();
-        
+        $this->category=$category;
+        if(empty($category))
+            $this->category = Category::where("enabled", true)->first();
         $this->user = auth()->user();
     }
 

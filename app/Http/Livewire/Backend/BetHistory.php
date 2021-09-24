@@ -12,7 +12,7 @@ class BetHistory extends Component
     {
         return view('livewire.backend.bet-history',
         [
-            'bets' => Bet::with('user','category')->latest()->paginate($this->bet_limit)
+            'bets' => Bet::userId(auth()->user()->id)->with('category')->latest()->paginate($this->bet_limit)
         ]);
     }
 }

@@ -1,13 +1,14 @@
 <?php
 
-use App\Http\Livewire\Backend\BetHistory;
+use App\Http\Livewire\Backend\UserDetails;
 use App\Http\Livewire\Backend\Bets;
-use App\Http\Livewire\Backend\Categories;
-use App\Http\Livewire\Backend\Dashboard;
 use App\Http\Livewire\Backend\Login;
-use App\Http\Livewire\Backend\ReportUsers;
 use App\Http\Livewire\Backend\Users;
 use Illuminate\Support\Facades\Route;
+use App\Http\Livewire\Backend\Dashboard;
+use App\Http\Livewire\Backend\BetHistory;
+use App\Http\Livewire\Backend\Categories;
+use App\Http\Livewire\Backend\ReportUsers;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/bets', Bets::class)->name('bets');
     Route::get('/history', BetHistory::class)->name('bets.history');
     Route::get('/report/users', ReportUsers::class)->name('report.users');
+    Route::get('/user-details/{user_id}', UserDetails::class)->name('user-details');
     Route::get('/logout', function () {
         auth()->logout();
         return redirect('/');

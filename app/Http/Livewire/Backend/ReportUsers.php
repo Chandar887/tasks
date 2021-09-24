@@ -14,6 +14,7 @@ class ReportUsers extends Component
     protected $paginationTheme = 'bootstrap';
     public $bet_limit = 10;
     public $groupBy = "Day";
+    public $search;
 
     public function ChangeOrder($by = "Day")
     {
