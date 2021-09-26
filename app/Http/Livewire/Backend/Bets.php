@@ -135,6 +135,14 @@ class Bets extends Component
         $this->category = Category::find($cat_id);
     }
 
+    private function setTimerFormat($value)
+    {
+        if ($value >= 10) 
+            return $value;
+        else 
+            return '0'.$value;    
+    }
+
     public function mount($category = null)
     {
         $this->categories = Category::where("enabled", true)->get();
@@ -156,9 +164,9 @@ class Bets extends Component
         $this->end_time = $this->dateFormatToHis($this->category->end_time);
         $this->current_time = $this->dateFormatToHis(Carbon::now());
         $start_time_diff = Carbon::now()->diff($this->category->start_time);
-        $this->start_timer = $start_time_diff->h .':'. $start_time_diff->i .':'. $start_time_diff->s;
+        $this->start_timer = $this->setTimerFormat($start_time_diff->h) .':'. $this->setTimerFormat($start_time_diff->i) .':'. $this->setTimerFormat($start_time_diff->s);
         $end_time_diff = Carbon::now()->diff($this->category->end_time);
-        $this->stop_timer = $end_time_diff->h .':'. $end_time_diff->i .':'. $end_time_diff->s;
+        $this->stop_timer = $this->setTimerFormat($end_time_diff->h) .':'. $this->setTimerFormat($end_time_diff->i) .':'. $this->setTimerFormat($end_time_diff->s);
         
         if ($this->current_time < $this->category->start_time) 
             $this->bet_status = BetStatus::NOT_STARTED;

@@ -2,11 +2,12 @@
 
 namespace App\Http\Livewire\Backend;
 
-use App\Models\Bet;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Models\Bet;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReportUsers extends Component
 {
@@ -15,6 +16,11 @@ class ReportUsers extends Component
     public $bet_limit = 10;
     public $groupBy = "Day";
     public $search;
+
+    public function updatingSearch()
+    {
+        $this->resetPage(); 
+    }
 
     public function ChangeOrder($by = "Day")
     {
@@ -32,13 +38,30 @@ class ReportUsers extends Component
             $groupBy = "Year(created_at)";
         }
         $query = Bet::query();
+
+        if ($this->search) {
+            $query->where(function (Builder $query) {
+                $query->where('number', 'like', "%$this->search%")
+                      ->orWhere('bet_amount', 'like', "%$this->search%")
+                      ->orWhere('result', 'like', "%$this->search%")
+                      ->orWhere('commission', 'like', "%$this->search%")
+                      ->orWhere('win_amount', 'like', "%$this->search%");
+            });
+        }
+        
         $query
             ->selectRaw("user_id,SUM(bet_amount) as bet_amount, SUM(win_amount) as win_amount, {$groupBy} as date")
             ->groupBy(DB::raw("{$groupBy}"), "user_id");
+
+        if (auth()->user()->role == 'sadmin') 
+            $data = $query->with('user')->paginate($this->bet_limit);
+        else 
+            $data = $query->userId(auth()->user()->id)->paginate($this->bet_limit);   
+
         return view(
             'livewire.backend.report-users',
             [
-                'bets' => $query->with('user')->paginate($this->bet_limit)
+                'bets' => $data
             ]
         );
     }

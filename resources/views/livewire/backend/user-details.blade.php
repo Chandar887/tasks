@@ -6,14 +6,6 @@
     <div class="container-fluid px-0">
         <div class="row mt-2 mb-3">
             <div class="col-6">
-                {{-- @if ($user->role == 'sadmin')
-                    <div class="me-lg-3">
-                        <button class="btn btn-primary d-inline-flex align-items-center me-2" id="open-user-form">
-                            <i class="fa fa-plus me-2"></i>
-                            New User
-                        </button>
-                    </div>
-                @endif  --}}
             </div>
             
             <div class="col-6 text-end">
@@ -22,27 +14,14 @@
                     <i class="fa fa-filter me-2"></i> Filters
                 </button>
             </div>
-            <div class="col-12 mt-2 collapse" id="fitlerBox">
+            <div wire:ignore.self class="col-12 mt-2 collapse" id="fitlerBox">
                 <div class="card card-body">
                     <div class="row no-gutters">
                         <div class="col-12 col-md-3 mb-2">
-                            <div class="input-group">
-                                <span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span>
-                                <input type="text" class="form-control" id="exampleInputIconLeft" placeholder="Search"
-                                wire:model.debounce.500ms="search" aria-label="Search">
-                            </div>
+                            From: <input type="date" class="form-control" name="date_from" wire:model="date_from" id="date_from" value="">
                         </div>
                         <div class="col-6 col-md-3  mb-2">
-                            <div class="input-group">
-                                <select class="form-control" wire:model="category">
-                                    <option value="">- Select Category -</option>
-                                    @if (count($categories) > 0)
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                        @endforeach
-                                    @endif    
-                                </select>
-                            </div>
+                            To: <input type="date" class="form-control" name="date_to" wire:model="date_to">
                         </div>
                     </div>
                 </div>
@@ -50,72 +29,81 @@
         </div>
 
         <div class="card border-0 shadow mb-4">
+            <div class="p-4 text-center">
+                <div class="col-12">
+                    <div class="text-center"><h4>User Details</h4></div>
+                    <div class="row">
+                        <div class="col-6 text-start">
+                            <h6>Username: {{ $user->username }}</h6>
+                            <h6>Name: {{ $user->name }}</h6>
+                            <h6>User Id: {{ $user->id }}</h6>
+                        </div>
+                        
+                        <div class="col-6 text-end">
+                            @if ($this->date_to) 
+                                <h6>From: {{ $this->date_from ?? '' }} </h6>
+                                <h6>To: {{ $this->date_to ?? '' }}</h6>
+                                <h6>Time: {{ Carbon\Carbon::now() }}</h6>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-centered table-nowrap mb-0 rounded">
                         <thead class="thead-light">
                             <tr>
                                 <th class="border-0 rounded-start">#</th>
-                                <th class="border-0">Name</th>
-                                <th class="border-0">Setting</th>
-                                <th class="border-0">Status</th>
-                                <th class="border-0 rounded-end">
-                                    <div class="text-end">Action</div>
-                                </th>
+                                <th class="border-0">Category</th>
+                                <th class="border-0">Bet Amount</th>
+                                <th class="border-0">Win Amount</th>
+                                <th class="border-0"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- @if (!empty($items))
+                            @if (count($items) > 0)
                                 @php
-                                $i = $items->perPage() * ($items->currentPage() - 1)+1;
+                                    $i = $items->perPage() * ($items->currentPage() - 1)+1;
+                                    $bet_amount = 0;
+                                    $win_amount = 0;
                                 @endphp
-                                @forelse ($items as $item) 
-                                @dd($item)
+                                @foreach ($items as $item) 
                                 <tr>
                                     <td>{{($i++)}}</td>
-                                    <td>{{$item->name}}</td>
-
-                                    <td>
-                                        Commission <span class="rounded text-danger p-1">{{$item->commission}}%</span><br />
-                                        Profit <span class="rounded text-success p-1">{{$item->profit}}x</span>
-                                    </td>
-
-                                    <td>
-                                        <small class="rounded p-1 text-light {{$item->enabled?"bg-success":"bg-danger"}}">
-                                            {{$item->enabled?"Enabled":"Disabled"}}
-                                        </small>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            @if ($user->role == 'sadmin')
-                                                <button type="button" class="btn btn-danger user-delete-btn"
-                                                    data-id="{{$item->id}}">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            @endif
-                                            <button type="button" class="btn btn-info user-edit-btn"
-                                                data-id="{{$item->id}}">
-                                                <i class="fa fa-edit"></i></button>
-                                            <a href="{{ route('user-details', $item->id) }}" class="btn btn-secondary">
-                                                <i class="fa fa-eye"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                    <td>{{$item->category->name}}</td>
+                                    <td>{{$item->bet_amount}}</td>
+                                    <td>{{$item->win_amount}}</td>
+                                    <td></td>
                                 </tr>
-                                @empty
+                                @php
+                                    $bet_amount+= $item->bet_amount;
+                                    $win_amount+= $item->win_amount;
+                                @endphp
+                                @endforeach 
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td><h6><b>Total: {{ $bet_amount }}</b></h6></td>
+                                    <td><h6><b>Total: {{ $win_amount }}</b></h6></td>
+                                    <td><h6><b>Balance: {{ $win_amount }}</b></h6></td>
+                                </tr>
+                            @else 
                                 <tr>
                                     <td colspan="10" class="text-danger text-center py-5">
                                         No data found
                                     </td>
-                                </tr>
-                                @endforelse 
-                            @endif --}}
+                                </tr>  
+                            @endif
+
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="card-footer">
-                {{-- {{$users->links()}} --}}
+                @if (!empty($items))
+                    {{$items->links()}}
+                @endif
             </div>
         </div>
 
@@ -123,5 +111,17 @@
 
     @include('backend._message')
     @push('script')
+        <script>
+            $(document).ready(function(){
+                var today = new Date();
+                var dd = today.getDate();
+                var mm = today.getMonth()+1; //January is 0!
+
+                var yyyy = today.getFullYear();
+                if(dd<10){dd='0'+dd} if(mm<10){mm='0'+mm} today = mm+'/'+dd+'/'+yyyy;
+
+                $('#date_from').attr('value', today);
+            });
+        </script>
     @endpush
 </div>

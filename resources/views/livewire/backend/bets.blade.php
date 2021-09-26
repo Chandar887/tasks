@@ -60,15 +60,21 @@
                 <div class="col-md-3 col-6">
                     <div class="text-center shadow border overflow-hidden">
                         <div class="bg-secondary h4 m-0 bet-timer">
-                            @if ($current_time < $start_time)
-                                @php $msg = 'Bet Starts After' @endphp
-                                {{ $start_timer }}
-                            @elseif ($current_time > $start_time && $current_time < $end_time) 
-                                @php $msg = 'Bet Expired After' @endphp
-                                {{ $stop_timer }}
+                            @if(@$result->result == null)
+                                @if ($current_time < $start_time)
+                                    @php $msg = 'Bet Starts After' @endphp
+                                    {{ $start_timer }}
+                                @elseif ($current_time > $start_time && $current_time < $end_time) 
+                                    @php $msg = 'Bet Expired After' @endphp
+                                    {{ $stop_timer }}
+                                @else 
+                                    @php $msg = 'Bet Expired' @endphp
+                                    {{ "00:00:00" }}
+                                @endif 
                             @else 
-                                @php $msg = 'Bet Expired' @endphp
-                                {{ "00:00:00" }}
+                                @php $msg = 'Bet Expired' 
+                                @endphp
+                                {{ "00:00:00" }} 
                             @endif 
                         </div>
                         <div class="bg-light text-dark font-weight-bold">{{ $msg }}</div>
@@ -377,15 +383,19 @@
                 timer = setTimeout(function () {
                     clicks = 0;
                     window.livewire.emit("bet-new",data_number);
-                    
-                    if (not_started) {
+                    if ("{{ @$result->result }}" == '') {
+                        if (not_started) {
                         $('#showErrors').modal('show');
                         $('.show-error').html('Bet not started yet.');
-                    } else if (expired) {
+                        } else if (expired) {
+                            $('#showErrors').modal('show');
+                            $('.show-error').html('Bet expired.');
+                        } else {
+                            $('#addbet').modal('show');
+                        }
+                    } else {
                         $('#showErrors').modal('show');
                         $('.show-error').html('Bet expired.');
-                    } else {
-                        $('#addbet').modal('show');
                     }
                 },300);
             } else {
@@ -471,7 +481,6 @@
         $(document).on("submit","#save-bet", function (e) {
             e.preventDefault();
             var category_id = "{{ @$category->id }}";
-            // console.log(category_id);
             var bet_number_arr = [];
             $('input[name="bet_number[]"]').each(function() {
                 bet_number_arr.push($(this).val());

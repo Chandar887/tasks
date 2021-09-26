@@ -2,30 +2,29 @@
 
 namespace App\Http\Livewire\Backend;
 
+use Carbon\Carbon;
 use App\Models\Bet;
 use App\Models\User;
 use Livewire\Component;
 use App\Models\Category;
 use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserDetails extends Component
 {
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
+
     public $detail_limit = 10;
     public $user;
     public $search;
     public $category;
     public $categories;
-    public $items;
+    public $date_from;
+    public $date_to;
 
-    public function updatingSearch()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingCategory()
+    public function updatingDateTo()
     {
         $this->resetPage();
     }
@@ -37,24 +36,23 @@ class UserDetails extends Component
 
     public function render()
     {
+        $items = [];
         $query = Bet::query();
-        if ($this->search) {
+        if ($this->date_from && $this->date_to) {
             $query->where(function (Builder $query) {
-                $query->where('device_id', 'like', "%$this->search%")
-                      ->orWhere('number', 'like', "%$this->search%")
-                      ->orWhere('bet_amount', 'like', "%$this->search%")
-                      ->orWhere('result', 'like', "%$this->search%")
-                      ->orWhere('commission', 'like', "%$this->search%")
-                      ->orWhere('win_amount', 'like', "%$this->search%");
-            });
+                $query->whereDate('created_at', '>=', $this->date_from)
+                      ->whereDate('created_at', '<=', $this->date_to);
+            }); 
+
+            $items = $query->groupBy('category_id')
+                           ->userId($this->user->id)
+                           ->selectRaw('SUM(bet_amount) as bet_amount, SUM(win_amount) as win_amount, category_id')->paginate($this->detail_limit);
+        } else {
+            $items = Bet::groupBy('category_id')
+                       ->userId($this->user->id)
+                       ->selectRaw('SUM(bet_amount) as bet_amount, SUM(win_amount) as win_amount, category_id')->paginate($this->detail_limit);
         }
-        
-        $this->categories = Category::all();
-        $items = $query->latest()->paginate($this->detail_limit);
-      
-        return view('livewire.backend.user-details',
-        [
-            'items' => $items
-        ]);
+
+        return view('livewire.backend.user-details')->with(['items' => $items]);
     }
 }

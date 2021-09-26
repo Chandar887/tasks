@@ -30,12 +30,8 @@
                             <div class="input-group">
                                 <span class="input-group-text" id="basic-addon1"><i class="fa fa-search"></i></span>
                                 <input type="text" class="form-control" id="exampleInputIconLeft" placeholder="Search"
-                                    aria-label="Search">
+                                    aria-label="Search" wire:model.debounce.500ms="search">
                             </div>
-                        </div>
-                        
-                        <div class="col-6 col-md-3 mb-2">
-                            <button class="btn btn-secondary">Search</button>
                         </div>
                     </div>
                 </div>

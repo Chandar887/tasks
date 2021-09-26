@@ -24,13 +24,16 @@ use App\Http\Livewire\Backend\ReportUsers;
 Route::get('/', Login::class)->name('login');
 
 Route::middleware(['auth'])->group(function () {
+    Route::middleware(['check_role'])->group(function () {
+        Route::get('/users', Users::class)->name('users');
+        Route::get('/categories', Categories::class)->name('categories');
+        Route::get('/user-details/{user_id}', UserDetails::class)->name('user-details');
+    });
+
     Route::get('/dashboard', Dashboard::class)->name('dashboard');
-    Route::get('/users', Users::class)->name('users');
-    Route::get('/categories', Categories::class)->name('categories');
     Route::get('/bets', Bets::class)->name('bets');
     Route::get('/history', BetHistory::class)->name('bets.history');
     Route::get('/report/users', ReportUsers::class)->name('report.users');
-    Route::get('/user-details/{user_id}', UserDetails::class)->name('user-details');
     Route::get('/logout', function () {
         auth()->logout();
         return redirect('/');
