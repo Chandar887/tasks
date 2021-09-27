@@ -121,7 +121,7 @@
                     style="cursor: default">
                     <button
                         class="font-weight-bold h4 m-0 border-0 number-card-button {{$tota_bet!=0?"bg-warning":""}} @if(!empty(@$result->result) && @$result->result==$n) blink @endif"
-                        title="Add Bet" data-number="{{$n}}">
+                        title="Add Bet" data-number="{{$n}}" data-bet-result="{{ @$result->result }}">
                         <span>{{$n}}</span>
                     </button>
                     <div class="bg-info text-light small" title="Bet">
@@ -197,7 +197,7 @@
     <div wire:ignore class="modal" id="addbet" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog justify-content-center">
-            <form id="save-bet">
+            <form id="save-bet" data-category-id="{{ @$category->id }}">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Add Bet</h5>
@@ -219,9 +219,9 @@
                             <div class="col-6">
                                 <label for="name">Bet<span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input type="number" name="bet_amount[]" class="form-control bet_amount_err @error('bet.bet_amount') is-invalid  @enderror bet_amount"
+                                    <input type="number" name="bet_amount[]" class="form-control bet_amount_focus bet_amount_err @error('bet.bet_amount') is-invalid  @enderror bet_amount"
                                         wire:model="bet.bet_amount" min="{{@$category->min_bet}}"
-                                        max="{{@$category->max_bet}}" required>
+                                        max="{{@$category->max_bet}}" data-category-min-bet="{{@$category->min_bet}}" data-category-max-bet="{{@$category->max_bet}}" required>
                                 </div>
                             </div>
                         </div>
@@ -356,7 +356,7 @@
 
         /*Add Bets Dialog*/
         $("#addbet").on('shown.bs.modal', function(){
-            $(this).find('#bet_amount').focus();
+            $(this).find('.bet_amount_focus').focus();
         });
         window.addEventListener('close-bet-form', event => {
             $('#addbet').modal('hide');
@@ -383,10 +383,12 @@
                 timer = setTimeout(function () {
                     clicks = 0;
                     window.livewire.emit("bet-new",data_number);
-                    if ("{{ @$result->result }}" == '') {
+                    var bet_result = ele.attr("data-bet-result");
+
+                    if (bet_result == '') {
                         if (not_started) {
-                        $('#showErrors').modal('show');
-                        $('.show-error').html('Bet not started yet.');
+                            $('#showErrors').modal('show');
+                            $('.show-error').html('Bet not started yet.');
                         } else if (expired) {
                             $('#showErrors').modal('show');
                             $('.show-error').html('Bet expired.');
@@ -408,8 +410,8 @@
 
         $(document).on("keydown",".bet_amount:last",function(e){
             var keyCode = e.keyCode || e.which; 
-            var min_bet = "{{@$category->min_bet}}";
-            var max_bet = "{{@$category->max_bet}}";
+            var min_bet = $(this).attr("data-category-min-bet");
+            var max_bet = $(this).attr("data-category-min-bet");
             
             if (keyCode == 9) {
                 var html = '<div class="row mb-2 added-fileds">';
@@ -480,7 +482,7 @@
         /**Save Bet */
         $(document).on("submit","#save-bet", function (e) {
             e.preventDefault();
-            var category_id = "{{ @$category->id }}";
+            var category_id = $(this).attr("data-category-id");
             var bet_number_arr = [];
             $('input[name="bet_number[]"]').each(function() {
                 bet_number_arr.push($(this).val());
